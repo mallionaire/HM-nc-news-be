@@ -8,12 +8,38 @@ exports.formatDates = (list) => {
   });
 };
 
-/* 
-This utility function should be able to take an array (`list`) of objects and return a new array. Each item in the new array must have its timestamp converted into a Javascript date object. Everything else in each item must be maintained.
+exports.makeRefObj = (list, key, value) => {
+  const refObj = {};
+  list.map((listItem) => {
+    refObj[listItem[key]] = listItem[value];
+  });
+  //console.log(refObj);
+  return refObj;
+};
 
-_hint: Think carefully about how you can test that this has worked - it's not by copying and pasting a sql timestamp from the terminal into your test_
+exports.formatComments = (comments, articleRef) => {
+  const formattedComments = this.formatDates(comments);
+  const newformat = formattedComments.map((comment) => {
+    const { created_by, belongs_to: key, ...restOfKeys } = comment;
+    return {
+      author: created_by,
+      article_id: articleRef[key],
+      ...restOfKeys,
+    };
+  });
+
+  return newformat;
+};
+
+/*
+This utility function should be able to take an array of comment objects (`comments`) and a reference object, and return a new array of formatted comments.
+
+Each formatted comment must have:
+
+- Its `created_by` property renamed to an `author` key
+- Its `belongs_to` property renamed to an `article_id` key
+- The value of the new `article_id` key must be the id corresponding to the original title value provided
+- Its `created_at` value converted into a javascript date object
+- The rest of the comment's properties must be maintained
+
 */
-
-exports.makeRefObj = (list) => {};
-
-exports.formatComments = (comments, articleRef) => {};
