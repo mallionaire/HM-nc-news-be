@@ -10,7 +10,7 @@ exports.formatDates = (list) => {
 
 exports.makeRefObj = (list, key, value) => {
   const refObj = {};
-  list.map((listItem) => {
+  list.forEach((listItem) => {
     refObj[listItem[key]] = listItem[value];
   });
   //console.log(refObj);
