@@ -1,5 +1,5 @@
 exports.up = function (knex) {
-  console.log("Creating ARTICLE table");
+  //console.log("Creating ARTICLE table");
 
   return knex.schema.createTable("articles", (articleTable) => {
     articleTable.increments("article_id").primary();
@@ -13,7 +13,7 @@ exports.up = function (knex) {
 };
 
 exports.down = function (knex) {
-  console.log("Removing ARTICLE table");
+  //console.log("Removing ARTICLE table");
   return knex.schema.dropTable("articles");
 };
 

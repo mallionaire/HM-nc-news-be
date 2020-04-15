@@ -25,12 +25,19 @@ describe("App", () => {
     });
   });
   describe.only("/api/topics", () => {
-    it("GET Status 200: responds with an array of topics objects", () => {
+    it("GET Status 200: responds with an array", () => {
       return request(app)
         .get("/api/topics")
         .expect(200)
         .then(({ body: { topics } }) => {
           expect(topics).to.be.an("array");
+        });
+    });
+    it("GET Status 200: responds with an array of topics objects", () => {
+      return request(app)
+        .get("/api/topics")
+        .expect(200)
+        .then(({ body: { topics } }) => {
           topics.forEach((topic) => {
             expect(topic).to.contain.keys(["slug", "description"]);
           });
