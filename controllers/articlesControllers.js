@@ -42,7 +42,7 @@ const postComment = (req, res, next) => {
 };
 
 const getComments = (req, res, next) => {
-  fetchCommentsByArticleId(req.params)
+  fetchCommentsByArticleId(req.params, req.query)
     .then((comments) => {
       res.status(200).send({ comments });
     })

@@ -1,6 +1,6 @@
 const handlePSQLErrors = (err, req, res, next) => {
   const codes = {
-    //"42703": { status: 400, msg: "Column not found" },
+    "42703": { status: 400, msg: "Unable to sort_by invalid query" },
     "22P02": { status: 400, msg: "Bad Request" },
     "23503": { status: 404, msg: "article_id or username not found" },
     "23502": { status: 400, msg: "comment field cannot be empty" },

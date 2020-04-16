@@ -42,19 +42,22 @@ const addComment = ({ body, username }, { article_id }) => {
     });
 };
 
-const fetchCommentsByArticleId = ({ article_id }) => {
+const fetchCommentsByArticleId = ({ article_id }, { sort_by, order }) => {
   //console.log("Wanna fetch some comments?");
+  if (order !== "asc" && order !== "desc") {
+    order = "desc";
+  }
   return connection("comments")
     .select("comment_id", "votes", "created_at", "author", "body")
     .where("article_id", article_id)
+    .orderBy(sort_by || "created_at", order || "desc")
     .then((comments) => {
       if (!comments.length) {
         return Promise.reject({
           status: 404,
-          msg: "No comments could be found",
+          msg: "No comments could be found for that article",
         });
       }
-      //console.log(comment);
       return comments;
     });
 };

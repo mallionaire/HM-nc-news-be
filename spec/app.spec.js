@@ -1,5 +1,7 @@
 process.env.NODE_ENV = "test";
-const { expect } = require("chai");
+const chai = require("chai");
+const expect = chai.expect;
+chai.use(require("chai-sorted"));
 const request = require("supertest");
 const app = require("../app");
 const connection = require("../db/connection");
@@ -180,6 +182,73 @@ describe("App", () => {
           });
         });
     });
+    it("BAD REQUEST Status 400: invalid article_id, responds with an error if article_id is in an incorrect format", () => {
+      return request(app)
+        .get("/api/articles/invalid_id/comments")
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("Bad Request");
+        });
+    });
+    it("NOT FOUND Status 404: invalid article_id, responds with an error if article_id is not found", () => {
+      // this also catches a validID with no comments ??
+      return request(app)
+        .get("/api/articles/200/comments")
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("No comments could be found for that article");
+        });
+    });
+  });
+  describe("/api/articles/:article_id/comments?queries", () => {
+    it("GET Status 200: responds with the comments sorted by created_at column by default", () => {
+      return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments).to.be.sortedBy("created_at", { descending: true });
+        });
+    });
+    it("GET Status 200: responds with the comments sorted by specified column", () => {
+      return request(app)
+        .get("/api/articles/1/comments?sort_by=votes")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments).to.be.sortedBy("votes", { descending: true });
+        });
+    });
+    it("BAD REQUEST Status 400: responds with an error if passed an invalid sort_by query", () => {
+      return request(app)
+        .get("/api/articles/1/comments?sort_by=invalid")
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("Unable to sort_by invalid query");
+        });
+    });
+    it("GET Status 200: responds with ordered comments, DESC by default", () => {
+      return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments).to.be.descendingBy("created_at");
+        });
+    });
+    it("GET Status 200: responds with comments in ASC order when passed", () => {
+      return request(app)
+        .get("/api/articles/1/comments?order=asc")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments).to.be.ascendingBy("created_at");
+        });
+    });
+    it("GET Status 200: responds with comments in DESC order if invalid order query is passed", () => {
+      return request(app)
+        .get("/api/articles/1/comments?order=65")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments).to.be.descendingBy("created_at");
+        });
+    });
   });
 });
 
@@ -192,28 +261,33 @@ describe("App", () => {
 // PATCH /api/articles/:article_id
 
 //POST /api/articles/:article_id/comments
+//GET /api/articles/:article_id/comments
 
 
-GET /api/articles/:article_id/comments
-
+----------------------------------------------
+GET /api/articles
+----------------------------------------------
 
 #### Responds with
 
-- an array of comments for the given `article_id` of which each comment should have the following properties:
-  - `comment_id`
-  - `votes`
-  - `created_at`
+- an `articles` array of article objects, each of which should have the following properties:
   - `author` which is the `username` from the users table
-  - `body`
+  - `title`
+  - `article_id`
+  - `topic`
+  - `created_at`
+  - `votes`
+  - `comment_count` which is the total count of all the comments with this article_id - you should make use of knex queries in order to achieve this
 
-#### Accepts queries
+#### Should accept queries
 
-- `sort_by`, which sorts the comments by any valid column (defaults to created_at)
+- `sort_by`, which sorts the articles by any valid column (defaults to date)
 - `order`, which can be set to `asc` or `desc` for ascending or descending (defaults to descending)
+- `author`, which filters the articles by the username value specified in the query
+- `topic`, which filters the articles by the topic value specified in the query
 
 
-GET /api/articles
-
+----------------------------------------------
 PATCH /api/comments/:comment_id
 DELETE /api/comments/:comment_id
 
