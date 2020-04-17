@@ -11,6 +11,11 @@ const handlePSQLErrors = (err, req, res, next) => {
   } else next(err);
 };
 
+const handle405s = (req, res) => {
+  //console.log(req.params);
+  res.status(405).send({ msg: "Method not allowed" });
+};
+
 const handleCustomErrors = (err, req, res, next) => {
   if (err.status) res.status(err.status).send({ msg: err.msg });
   else next(err);
@@ -26,6 +31,7 @@ const handle500s = (err, req, res, next) => {
 };
 module.exports = {
   handlePSQLErrors,
+  handle405s,
   handleCustomErrors,
   handleInvalidPaths,
   handle500s,

@@ -3,10 +3,11 @@ const {
   updateVotes,
   addComment,
   fetchCommentsByArticleId,
+  fetchAllArticles,
 } = require("../models/articlesModels");
 
 const getArticle = (req, res, next) => {
-  //console.log("in Articles Controller");
+  //console.log("in Articles Controller", req.params);
   fetchArticle(req.params)
     .then((article) => {
       res.status(200).send({ article });
@@ -51,4 +52,22 @@ const getComments = (req, res, next) => {
       next(err);
     });
 };
-module.exports = { getArticle, patchVotes, postComment, getComments };
+
+const getAllArticles = (req, res, next) => {
+  fetchAllArticles(req.query)
+    .then((articles) => {
+      res.status(200).send({ articles });
+    })
+    .catch((err) => {
+      //console.log(err);
+      next(err);
+    });
+};
+//
+module.exports = {
+  getArticle,
+  patchVotes,
+  postComment,
+  getComments,
+  getAllArticles,
+};

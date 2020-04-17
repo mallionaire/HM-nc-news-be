@@ -45,6 +45,19 @@ describe("App", () => {
           });
         });
     });
+    it('INVALID METHODS Status 405 - responds with "Method not allowed" message', () => {
+      const invalidMethods = ["put", "patch", "delete"];
+
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/topics")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(requests);
+    });
   });
   describe("/api/users/:username", () => {
     it("GET Status 200: responds with a specific user when passed a username", () => {
@@ -62,6 +75,19 @@ describe("App", () => {
         .then(({ body: { msg } }) => {
           expect(msg).to.equal("User not found");
         });
+    });
+    it('INVALID METHODS Status 405 - responds with "Method not allowed" message', () => {
+      const invalidMethods = ["put", "patch", "delete"];
+
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/users/*")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(requests);
     });
   });
   describe("/api/articles/:article_id", () => {
@@ -119,6 +145,19 @@ describe("App", () => {
           expect(msg).to.equal("Bad Request");
         });
     });
+    it('INVALID METHODS Status 405 - responds with "Method not allowed" message', () => {
+      const invalidMethods = ["put", "options", "trace", "delete"];
+
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/articles/*")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(requests);
+    });
   });
   describe("/api/articles/:article_id/comments", () => {
     it("POST Status 201: allows the user to add a comment, responds with the posted comment", () => {
@@ -162,6 +201,19 @@ describe("App", () => {
         .then(({ body: { msg } }) => {
           expect(msg).to.equal("comment field cannot be empty");
         });
+    });
+    it('INVALID METHODS Status 405 - responds with "Method not allowed" message', () => {
+      const invalidMethods = ["put", "patch", "delete"];
+
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/articles/*/comments")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(requests);
     });
   });
 
@@ -250,6 +302,127 @@ describe("App", () => {
         });
     });
   });
+  describe("/api/articles", () => {
+    it("GET Status 200: responds with an array of articles objects", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.be.an("array");
+        });
+    });
+    it("GET Status 200: each articles object has the correct keys, and comment_count", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          articles.forEach((article) => {
+            expect(article).to.have.all.keys([
+              "author",
+              "title",
+              "article_id",
+              "topic",
+              "votes",
+              "created_at",
+              "comment_count",
+            ]);
+          });
+        });
+    });
+    it('INVALID METHODS Status 405 - responds with "Method not allowed" message', () => {
+      const invalidMethods = ["put", "options", "delete"];
+
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/articles")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(requests);
+    });
+    it("GET Status 200: responds with the articles sorted by created_at column by default", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.be.sortedBy("created_at", { descending: true });
+        });
+    });
+    it("GET Status 200: responds with the articles sorted by author", () => {
+      return request(app)
+        .get("/api/articles?sort_by=author")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.be.sortedBy("author", { descending: true });
+        });
+    });
+    it("BAD REQUEST Status 400: responds with an error if passed an invalid sort_by query", () => {
+      return request(app)
+        .get("/api/articles?sort_by=invalid")
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("Unable to sort_by invalid query");
+        });
+    });
+    it("GET Status 200: responds with all articles, ordered by DESC by default", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.be.descendingBy("created_at");
+        });
+    });
+    it("GET Status 200: responds with articles, ordered by ASC when passed", () => {
+      return request(app)
+        .get("/api/articles?order=asc")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.be.ascendingBy("created_at");
+        });
+    });
+    it("GET Status 200: responds with articles in DESC order if invalid order query is passed", () => {
+      return request(app)
+        .get("/api/articles?order=invalid")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.be.descendingBy("created_at");
+        });
+    });
+    it("GET Status 200: accepts an author query, responds with articles filtered by author", () => {
+      return request(app)
+        .get("/api/articles?author=butter_bridge")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).to.equal(3);
+        });
+    });
+    it("NOT FOUND Status 404: responds with an error if an invalid author query is passed", () => {
+      return request(app)
+        .get("/api/articles?author=invalid_author")
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("That author could not be found");
+        });
+    });
+    it("GET Status 200: accepts a topic query, responds with articles filtered by author", () => {
+      return request(app)
+        .get("/api/articles?topic=cats")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).to.equal(1);
+        });
+    });
+    it("NOT FOUND Status 404: responds with an error if an invalid topic query is passed", () => {
+      return request(app)
+        .get("/api/articles?topic=invalid_author")
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("That topic could not be found");
+        });
+    });
+  });
 });
 
 /* 
@@ -260,29 +433,30 @@ describe("App", () => {
 // GET /api/articles/:article_id
 // PATCH /api/articles/:article_id
 
-//POST /api/articles/:article_id/comments
-//GET /api/articles/:article_id/comments
+// POST /api/articles/:article_id/comments
+// GET /api/articles/:article_id/comments
 
 
 ----------------------------------------------
 GET /api/articles
-----------------------------------------------
 
 #### Responds with
 
 - an `articles` array of article objects, each of which should have the following properties:
-  - `author` which is the `username` from the users table
-  - `title`
-  - `article_id`
-  - `topic`
-  - `created_at`
-  - `votes`
-  - `comment_count` which is the total count of all the comments with this article_id - you should make use of knex queries in order to achieve this
+- `author` which is the `username` from the users table
+- `title`
+- `article_id`
+- `topic`
+- `created_at`
+- `votes`
+- `comment_count` which is the total count of all the comments with this article_id - you should make use of knex queries in order to achieve this
 
 #### Should accept queries
 
 - `sort_by`, which sorts the articles by any valid column (defaults to date)
 - `order`, which can be set to `asc` or `desc` for ascending or descending (defaults to descending)
+----------------------------------------------
+
 - `author`, which filters the articles by the username value specified in the query
 - `topic`, which filters the articles by the topic value specified in the query
 
