@@ -1,10 +1,9 @@
 const connection = require("../db/connection");
 
-const updateCommentVotes = ({ comment_id }, { inc_vote }) => {
-  //console.log(comment_id, inc_vote);
+const updateCommentVotes = ({ comment_id }, { inc_votes }) => {
   return connection("comments")
     .where("comment_id", comment_id)
-    .increment("votes", inc_vote)
+    .increment("votes", inc_votes || 0)
     .returning("*")
     .then((updatedComment) => {
       if (!updatedComment.length) {
@@ -13,21 +12,23 @@ const updateCommentVotes = ({ comment_id }, { inc_vote }) => {
           msg: "Comment not found",
         });
       }
-      //console.log("Use your vote, in models", updatedComment);
+
       return updatedComment[0];
     });
 };
 
 const removeComment = ({ comment_id }) => {
-  //console.log("Delete your comment, in models");
-  return connection("comments").where("comment_id", comment_id).del();
-  // .then((DeletedComment) => {
-  //   if (!DeletedComment.length)
-  //     return Promise.reject({
-  //       status: 404,
-  //       msg: "Could not delete, comment not found",
-  //     });
-  // });
+  return connection("comments")
+    .where("comment_id", comment_id)
+    .del()
+    .then((commentDeleted) => {
+      if (commentDeleted === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "Could not delete, comment not found",
+        });
+      }
+    });
 };
 
 module.exports = { updateCommentVotes, removeComment };

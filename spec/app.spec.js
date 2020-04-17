@@ -16,6 +16,21 @@ after(() => {
 });
 
 describe("App", () => {
+  describe("/api", () => {
+    it('INVALID METHODS Status 405 - responds with "Method not allowed" message', () => {
+      const invalidMethods = ["put", "patch", "delete", "options"];
+
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(requests);
+    });
+  });
   describe("/invalid_path", () => {
     it("NOT FOUND Status 404: responds with 'Path not found.' message", () => {
       return request(app)
@@ -144,6 +159,15 @@ describe("App", () => {
           expect(article.votes).to.equal(102);
         });
     });
+    it("PATCH Status 200: ignores a patch request with no information in the request body, does not change vote count", () => {
+      return request(app)
+        .patch("/api/articles/1")
+        .expect(200)
+        .send({})
+        .then(({ body: { article } }) => {
+          expect(article.votes).to.equal(100);
+        });
+    });
     it('BAD REQUEST Status 400: responds with a "Bad Request" message when passed an invalid inc_vote format', () => {
       return request(app)
         .patch("/api/articles/1")
@@ -207,7 +231,28 @@ describe("App", () => {
           body: null,
         })
         .then(({ body: { msg } }) => {
-          expect(msg).to.equal("comment field cannot be empty");
+          expect(msg).to.equal("required field cannot be empty");
+        });
+    });
+    it("BAD REQUEST Status 400: responds with an error if the username body is empty", () => {
+      return request(app)
+        .post("/api/articles/2/comments")
+        .expect(400)
+        .send({
+          username: null,
+          body: "I'm a comment",
+        })
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("required field cannot be empty");
+        });
+    });
+    it("BAD REQUEST Status 400: responds with an error if the comment & username values aren't included", () => {
+      return request(app)
+        .post("/api/articles/2/comments")
+        .expect(400)
+        .send({})
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("required field cannot be empty");
         });
     });
     it('INVALID METHODS Status 405 - responds with "Method not allowed" message', () => {
@@ -435,7 +480,7 @@ describe("App", () => {
     it("PATCH Status 200: changes the vote count on the specified comment_id", () => {
       return request(app)
         .patch("/api/comments/3")
-        .send({ inc_vote: 2 })
+        .send({ inc_votes: 2 })
         .expect(200)
         .then(({ body: { comment } }) => {
           expect(comment.votes).to.equal(102);
@@ -444,7 +489,7 @@ describe("App", () => {
     it("PATCH Status 200: changes the vote count on the specified comment_id, works with negative numbers", () => {
       return request(app)
         .patch("/api/comments/3")
-        .send({ inc_vote: -12 })
+        .send({ inc_votes: -12 })
         .expect(200)
         .then(({ body: { comment } }) => {
           expect(comment.votes).to.equal(88);
@@ -453,7 +498,7 @@ describe("App", () => {
     it("BAD REQUEST Status 400: invalid comment_id, responds with an error if comment_id is in invalid", () => {
       return request(app)
         .patch("/api/comments/invalid_id")
-        .send({ inc_vote: 2 })
+        .send({ inc_votes: 2 })
         .expect(400)
         .then(({ body: { msg } }) => {
           expect(msg).to.equal("Bad Request");
@@ -461,11 +506,20 @@ describe("App", () => {
     });
     it("BAD REQUEST Status 400: invalid inc_votes value, responds with an error if inc_votes is in an incorrect format", () => {
       return request(app)
-        .patch("/api/comments/3")
-        .send({ inc_vote: "twelve" })
+        .patch("/api/comments/1")
+        .send({ inc_votes: "twelve" })
         .expect(400)
         .then(({ body: { msg } }) => {
           expect(msg).to.equal("Bad Request");
+        });
+    });
+    it("PATCH Status 200: ignores a patch request with no information in the request body, does not change vote count", () => {
+      return request(app)
+        .patch("/api/comments/1")
+        .expect(200)
+        .send({})
+        .then(({ body: { comment } }) => {
+          expect(comment.votes).to.equal(16);
         });
     });
     it("NOT FOUND Status 404: invalid comment_id, responds with an error if comment_id does not exist", () => {
@@ -481,10 +535,25 @@ describe("App", () => {
       return request(app).delete("/api/comments/1").expect(204);
     });
     it("NOT FOUND 404: responds with an error if the comment_id is incorrect", () => {
-      return request(app).delete("/api/comments/3000").expect(404);
-      // .then(({ body: { msg } }) => {
-      //   expect(msg).to.equal("Could not delete, comment not found");
-      // });
+      return request(app)
+        .delete("/api/comments/3000")
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("Could not delete, comment not found");
+        });
+    });
+    it('INVALID METHODS Status 405 - responds with "Method not allowed" message', () => {
+      const invalidMethods = ["put", "trace", "options"];
+
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/comments/*")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(requests);
     });
   });
 });

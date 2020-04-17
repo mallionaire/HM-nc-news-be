@@ -15,14 +15,6 @@ describe("formatDates", () => {
     expect(actual).to.deep.equal([]);
     expect(actual).to.not.equal(inputArr);
   });
-  // it("returns an array of objects", () => {
-  //   const inputArr = [{}, {}, {}];
-  //   const actual = formatDates(inputArr);
-  //   expect(actual).to.deep.equal(inputArr);
-  //   actual.forEach((item) => {
-  //     expect(item).to.be.an("object");
-  //   });
-  // });
   it("converts the created_at key for one list object into a JS date object", () => {
     const inputArr = [
       {

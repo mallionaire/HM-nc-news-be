@@ -3,7 +3,7 @@ const handlePSQLErrors = (err, req, res, next) => {
     "42703": { status: 400, msg: "Unable to sort_by invalid query" },
     "22P02": { status: 400, msg: "Bad Request" },
     "23503": { status: 404, msg: "article_id or username not found" },
-    "23502": { status: 400, msg: "comment field cannot be empty" },
+    "23502": { status: 400, msg: "required field cannot be empty" },
   };
   if (err.code in codes) {
     const { status, msg } = codes[err.code];

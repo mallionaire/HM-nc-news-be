@@ -20,7 +20,7 @@ const fetchArticle = ({ article_id }) => {
 const updateVotes = ({ article_id }, { inc_votes }) => {
   return connection("articles")
     .where("article_id", article_id)
-    .increment("votes", inc_votes)
+    .increment("votes", inc_votes || 0)
     .returning("*")
     .then((updatedArticle) => {
       return updatedArticle[0];
@@ -80,11 +80,9 @@ const fetchAllArticles = ({ sort_by, order, author, topic }) => {
     .count("comment_id as comment_count")
     .groupBy("articles.article_id")
     .orderBy(sort_by || "created_at", order || "desc")
-    .modify((authorQuery) => {
-      if (author) authorQuery.where("articles.author", author);
-    })
-    .modify((topicQuery) => {
-      if (topic) topicQuery.where("articles.topic", topic);
+    .modify((query) => {
+      if (author) query.where("articles.author", author);
+      if (topic) query.where("articles.topic", topic);
     })
     .then((articles) => {
       if (!articles.length && author) {
