@@ -296,12 +296,19 @@ describe("App", () => {
         });
     });
     it("NOT FOUND Status 404: invalid article_id, responds with an error if article_id is not found", () => {
-      // this also catches a validID with no comments ??
       return request(app)
         .get("/api/articles/200/comments")
         .expect(404)
         .then(({ body: { msg } }) => {
           expect(msg).to.equal("No comments could be found for that article");
+        });
+    });
+    it("GET Status 200: responds with an empty array if no comments are found", () => {
+      return request(app)
+        .get("/api/articles/2/comments")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments).to.eql([]);
         });
     });
   });
@@ -355,7 +362,7 @@ describe("App", () => {
         });
     });
   });
-  describe("/api/articles", () => {
+  describe.only("/api/articles", () => {
     it("GET Status 200: responds with an array of articles objects", () => {
       return request(app)
         .get("/api/articles")
@@ -451,6 +458,14 @@ describe("App", () => {
           expect(articles.length).to.equal(3);
         });
     });
+    it("GET Status 200: accepts a topic query, responds with an empty array if no articles are found", () => {
+      return request(app)
+        .get("/api/articles?author=lurker")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.deep.equal([]);
+        });
+    });
     it("NOT FOUND Status 404: responds with an error if an invalid author query is passed", () => {
       return request(app)
         .get("/api/articles?author=invalid_author")
@@ -467,9 +482,17 @@ describe("App", () => {
           expect(articles.length).to.equal(1);
         });
     });
+    it("GET Status 200: accepts a topic query, responds with an empty array if no articles are found", () => {
+      return request(app)
+        .get("/api/articles?topic=paper")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.deep.equal([]);
+        });
+    });
     it("NOT FOUND Status 404: responds with an error if an invalid topic query is passed", () => {
       return request(app)
-        .get("/api/articles?topic=invalid_author")
+        .get("/api/articles?topic=invalid")
         .expect(404)
         .then(({ body: { msg } }) => {
           expect(msg).to.equal("That topic could not be found");

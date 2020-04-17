@@ -50,15 +50,20 @@ const fetchCommentsByArticleId = ({ article_id }, { sort_by, order }) => {
   return connection("comments")
     .select("comment_id", "votes", "created_at", "author", "body")
     .where("article_id", article_id)
-    .orderBy(sort_by || "created_at", order || "desc")
-    .then((comments) => {
-      if (!comments.length) {
+    .orderBy(sort_by || "created_at", order || "desc");
+};
+
+const checkArticleExists = ({ article_id }) => {
+  return connection("articles")
+    .select()
+    .where("article_id", article_id)
+    .then((articles) => {
+      if (!articles.length) {
         return Promise.reject({
           status: 404,
           msg: "No comments could be found for that article",
         });
       }
-      return comments;
     });
 };
 
@@ -83,30 +88,63 @@ const fetchAllArticles = ({ sort_by, order, author, topic }) => {
     .modify((query) => {
       if (author) query.where("articles.author", author);
       if (topic) query.where("articles.topic", topic);
-    })
-    .then((articles) => {
-      if (!articles.length && author) {
-        return Promise.reject({
-          status: 404,
-          msg: "That author could not be found",
-        });
-      } else if (!articles.length && topic) {
+    });
+  // .then((articles) => {
+  //   if (!articles.length && author) {
+  //     return Promise.reject({
+  //       status: 404,
+  //       msg: "That author could not be found",
+  //     });
+  //   } else if (!articles.length && topic) {
+  //     return Promise.reject({
+  //       status: 404,
+  //       msg: "That topic could not be found",
+  //     });
+  //   } else {
+  //     //console.log(articles);
+  //     return articles;
+  //   }
+  // });
+};
+
+const validateTopics = ({ topic }) => {
+  return connection("topics")
+    .select("*")
+    .where("slug", topic)
+    .then((validTopic) => {
+      if (!validTopic.length) {
         return Promise.reject({
           status: 404,
           msg: "That topic could not be found",
         });
-      } else {
-        //console.log(articles);
-        return articles;
       }
+      return validTopic[0];
     });
 };
 
+const validateAuthor = ({ author }) => {
+  return connection("users")
+    .select("*")
+    .where("username", author)
+    .then((validAuthor) => {
+      if (!validAuthor.length) {
+        return Promise.reject({
+          status: 404,
+          msg: "That author could not be found",
+        });
+      }
+      return validAuthor[0];
+    });
+};
 // 'comment_id', 'votes', 'created_at', 'author', 'body'
+// Unable to locate articles that fit that topic
 module.exports = {
   fetchArticle,
   updateVotes,
   addComment,
   fetchCommentsByArticleId,
   fetchAllArticles,
+  checkArticleExists,
+  validateTopics,
+  validateAuthor,
 };

@@ -4,6 +4,9 @@ const {
   addComment,
   fetchCommentsByArticleId,
   fetchAllArticles,
+  checkArticleExists,
+  validateTopics,
+  validateAuthor,
 } = require("../models/articlesModels");
 
 const getArticle = (req, res, next) => {
@@ -43,8 +46,12 @@ const postComment = (req, res, next) => {
 };
 
 const getComments = (req, res, next) => {
-  fetchCommentsByArticleId(req.params, req.query)
-    .then((comments) => {
+  Promise.all([
+    fetchCommentsByArticleId(req.params, req.query),
+    checkArticleExists(req.params),
+  ])
+    .then(([comments]) => {
+      console.log(comments);
       res.status(200).send({ comments });
     })
     .catch((err) => {
@@ -54,6 +61,14 @@ const getComments = (req, res, next) => {
 };
 
 const getAllArticles = (req, res, next) => {
+  const { topic, author } = req.query;
+  if (topic) {
+    validateTopics(req.query).catch(next);
+  }
+  if (author) {
+    validateAuthor(req.query).catch(next);
+  }
+
   fetchAllArticles(req.query)
     .then((articles) => {
       res.status(200).send({ articles });
