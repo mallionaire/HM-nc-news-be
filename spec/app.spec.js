@@ -25,6 +25,14 @@ describe("App", () => {
           expect(msg).to.equal("Path not found.");
         });
     });
+    it("NOT FOUND Status 404: responds with 'Path not found.' message, different invalid_path", () => {
+      return request(app)
+        .get("/api/articles/not_a_path/invalid_path")
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("Path not found.");
+        });
+    });
   });
   describe("/api/topics", () => {
     it("GET Status 200: responds with an array", () => {
@@ -423,6 +431,62 @@ describe("App", () => {
         });
     });
   });
+  describe("/api/comments/:comment_id", () => {
+    it("PATCH Status 200: changes the vote count on the specified comment_id", () => {
+      return request(app)
+        .patch("/api/comments/3")
+        .send({ inc_vote: 2 })
+        .expect(200)
+        .then(({ body: { comment } }) => {
+          expect(comment.votes).to.equal(102);
+        });
+    });
+    it("PATCH Status 200: changes the vote count on the specified comment_id, works with negative numbers", () => {
+      return request(app)
+        .patch("/api/comments/3")
+        .send({ inc_vote: -12 })
+        .expect(200)
+        .then(({ body: { comment } }) => {
+          expect(comment.votes).to.equal(88);
+        });
+    });
+    it("BAD REQUEST Status 400: invalid comment_id, responds with an error if comment_id is in invalid", () => {
+      return request(app)
+        .patch("/api/comments/invalid_id")
+        .send({ inc_vote: 2 })
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("Bad Request");
+        });
+    });
+    it("BAD REQUEST Status 400: invalid inc_votes value, responds with an error if inc_votes is in an incorrect format", () => {
+      return request(app)
+        .patch("/api/comments/3")
+        .send({ inc_vote: "twelve" })
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("Bad Request");
+        });
+    });
+    it("NOT FOUND Status 404: invalid comment_id, responds with an error if comment_id does not exist", () => {
+      return request(app)
+        .patch("/api/comments/3000")
+        .send({ inc_vote: 12 })
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("Comment not found");
+        });
+    });
+    it("DELETE Status 204: deletes a comment by a specified comment_id", () => {
+      return request(app).delete("/api/comments/1").expect(204);
+    });
+    it("NOT FOUND 404: responds with an error if the comment_id is incorrect", () => {
+      return request(app).delete("/api/comments/3000").expect(404);
+      // .then(({ body: { msg } }) => {
+      //   expect(msg).to.equal("Could not delete, comment not found");
+      // });
+    });
+  });
 });
 
 /* 
@@ -436,34 +500,23 @@ describe("App", () => {
 // POST /api/articles/:article_id/comments
 // GET /api/articles/:article_id/comments
 
+// GET /api/articles
+
+// PATCH /api/comments/:comment_id
 
 ----------------------------------------------
-GET /api/articles
+DELETE /api/comments/:comment_id
+----------------------------------------------
+
+#### Should
+
+- delete the given comment by `comment_id`
 
 #### Responds with
 
-- an `articles` array of article objects, each of which should have the following properties:
-- `author` which is the `username` from the users table
-- `title`
-- `article_id`
-- `topic`
-- `created_at`
-- `votes`
-- `comment_count` which is the total count of all the comments with this article_id - you should make use of knex queries in order to achieve this
-
-#### Should accept queries
-
-- `sort_by`, which sorts the articles by any valid column (defaults to date)
-- `order`, which can be set to `asc` or `desc` for ascending or descending (defaults to descending)
-----------------------------------------------
-
-- `author`, which filters the articles by the username value specified in the query
-- `topic`, which filters the articles by the topic value specified in the query
-
+- status 204 and no content
 
 ----------------------------------------------
-PATCH /api/comments/:comment_id
-DELETE /api/comments/:comment_id
 
 GET /api
 */
