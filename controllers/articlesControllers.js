@@ -51,7 +51,7 @@ const getComments = (req, res, next) => {
     checkArticleExists(req.params),
   ])
     .then(([comments]) => {
-      console.log(comments);
+      // console.log(comments);
       res.status(200).send({ comments });
     })
     .catch((err) => {

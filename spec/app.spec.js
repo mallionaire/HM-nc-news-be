@@ -362,7 +362,7 @@ describe("App", () => {
         });
     });
   });
-  describe.only("/api/articles", () => {
+  describe("/api/articles", () => {
     it("GET Status 200: responds with an array of articles objects", () => {
       return request(app)
         .get("/api/articles")
