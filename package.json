@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "chai-sorted": "^0.2.0",
-    "pg": "^8.0.2",
+    "pg": "^8.0.3",
     "supertest": "^4.0.2"
   }
 }
