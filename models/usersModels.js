@@ -1,7 +1,7 @@
 const connection = require("../db/connection");
 
 const fetchUser = ({ username }) => {
-  //console.log("in users models");
+  
   return connection("users")
     .where("username", username)
     .select("*")

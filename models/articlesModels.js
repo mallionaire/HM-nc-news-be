@@ -1,7 +1,6 @@
 const connection = require("../db/connection");
 
 const fetchArticle = ({ article_id }) => {
-  //console.log("in Articles models", article_id);
   return connection("articles")
     .select("articles.*")
     .where("articles.article_id", article_id)
@@ -12,7 +11,7 @@ const fetchArticle = ({ article_id }) => {
       if (!articles.length) {
         return Promise.reject({ status: 404, msg: "Article not found" });
       }
-      //console.log(articles);
+
       return articles[0];
     });
 };
@@ -28,8 +27,6 @@ const updateVotes = ({ article_id }, { inc_votes }) => {
 };
 
 const addComment = ({ body, username }, { article_id }) => {
-  //console.log(comment);
-
   return connection("comments")
     .insert({ body, author: username, article_id })
     .returning("*")
@@ -37,13 +34,12 @@ const addComment = ({ body, username }, { article_id }) => {
       if (!comment.length) {
         return Promise.reject({ status: 404, msg: "Nope not found" });
       }
-      //console.log(comment);
+
       return comment[0];
     });
 };
 
 const fetchCommentsByArticleId = ({ article_id }, { sort_by, order }) => {
-  //console.log("Wanna fetch some comments?");
   if (order !== "asc" && order !== "desc") {
     order = "desc";
   }
@@ -68,7 +64,6 @@ const checkArticleExists = ({ article_id }) => {
 };
 
 const fetchAllArticles = ({ sort_by, order, author, topic }) => {
-  //console.log("ALL the articles you say??");
   if (order !== "asc" && order !== "desc") {
     order = "desc";
   }
@@ -89,22 +84,6 @@ const fetchAllArticles = ({ sort_by, order, author, topic }) => {
       if (author) query.where("articles.author", author);
       if (topic) query.where("articles.topic", topic);
     });
-  // .then((articles) => {
-  //   if (!articles.length && author) {
-  //     return Promise.reject({
-  //       status: 404,
-  //       msg: "That author could not be found",
-  //     });
-  //   } else if (!articles.length && topic) {
-  //     return Promise.reject({
-  //       status: 404,
-  //       msg: "That topic could not be found",
-  //     });
-  //   } else {
-  //     //console.log(articles);
-  //     return articles;
-  //   }
-  // });
 };
 
 const validateTopics = ({ topic }) => {
@@ -136,8 +115,7 @@ const validateAuthor = ({ author }) => {
       return validAuthor[0];
     });
 };
-// 'comment_id', 'votes', 'created_at', 'author', 'body'
-// Unable to locate articles that fit that topic
+
 module.exports = {
   fetchArticle,
   updateVotes,

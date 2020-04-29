@@ -8,14 +8,14 @@ const {
   handle500s,
 } = require("./errors");
 
-//remember to use body parser when you need it!
+
 app.use(express.json());
 
 app.use("/api", apiRouter);
 
 app.all("/*", handleInvalidPaths);
 
-//Error handling middleware
+
 app.use(handlePSQLErrors);
 app.use(handleCustomErrors);
 app.use(handle500s);

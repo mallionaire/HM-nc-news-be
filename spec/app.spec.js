@@ -6,11 +6,11 @@ const request = require("supertest");
 const app = require("../app");
 const connection = require("../db/connection");
 
-// beforeEach -> runs seed file to reset db
+
 beforeEach(() => {
   return connection.seed.run();
 });
-// Mocha Hook -> closes connection with the server
+
 after(() => {
   return connection.destroy();
 });
@@ -134,7 +134,7 @@ describe("App", () => {
     it('NOT FOUND  Status 404: responds with "Article not found" message when passed an invalid article_id', () => {
       return (
         request(app)
-          //.get("/api/articles/invalid_id") <-- why does this not work with text?
+         
           .get("/api/articles/900")
           .expect(404)
           .then(({ body: { msg } }) => {
@@ -580,35 +580,3 @@ describe("App", () => {
     });
   });
 });
-
-/* 
-// GET /api/topics
-
-// GET /api/users/:username
-
-// GET /api/articles/:article_id
-// PATCH /api/articles/:article_id
-
-// POST /api/articles/:article_id/comments
-// GET /api/articles/:article_id/comments
-
-// GET /api/articles
-
-// PATCH /api/comments/:comment_id
-
-----------------------------------------------
-DELETE /api/comments/:comment_id
-----------------------------------------------
-
-#### Should
-
-- delete the given comment by `comment_id`
-
-#### Responds with
-
-- status 204 and no content
-
-----------------------------------------------
-
-GET /api
-*/
