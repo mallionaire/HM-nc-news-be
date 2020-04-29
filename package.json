@@ -32,11 +32,11 @@
     "express": "^4.17.1",
     "knex": "^0.20.14",
     "mocha": "^7.1.1",
-    "postgres": "^1.0.2"
+    "postgres": "^1.0.2",
+    "pg": "^8.0.3"
   },
   "devDependencies": {
     "chai-sorted": "^0.2.0",
-    "pg": "^8.0.3",
     "supertest": "^4.0.2"
   }
 }
