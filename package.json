@@ -29,11 +29,12 @@
   "homepage": "https://github.com/northcoders/be-nc-news#readme",
   "dependencies": {
     "chai": "^4.2.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "knex": "^0.20.14",
     "mocha": "^7.1.1",
-    "postgres": "^1.0.2",
-    "pg": "^8.0.3"
+    "pg": "^8.0.3",
+    "postgres": "^1.0.2"
   },
   "devDependencies": {
     "chai-sorted": "^0.2.0",
